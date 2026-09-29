@@ -13,7 +13,6 @@ public final class Constants {
         public static final boolean rightInverted = true;
 
         public static final double deadband = 0.08;
-        public static final double maxOutput = 0.25;
 
         private DriveConstants() {
         }

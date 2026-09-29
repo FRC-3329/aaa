@@ -3,6 +3,9 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import dev.doglog.DogLog;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -15,6 +18,7 @@ public class Drivetrain extends SubsystemBase {
     private final VictorSPX rightRear = new VictorSPX(DriveConstants.rightRearCanId);
 
     private final DifferentialDrive drive = new DifferentialDrive(leftFront, rightFront);
+    private final DoubleSubscriber maxOutput = DogLog.tunable("Drivetrain/MaxOutput", 0.25);
 
     public Drivetrain() {
         leftFront.setInverted(DriveConstants.leftInverted);
@@ -27,7 +31,6 @@ public class Drivetrain extends SubsystemBase {
         rightRear.setInverted(InvertType.FollowMaster);
 
         drive.setDeadband(DriveConstants.deadband);
-        drive.setMaxOutput(DriveConstants.maxOutput);
 
         drive.setSafetyEnabled(true);
         drive.stopMotor();
@@ -39,5 +42,14 @@ public class Drivetrain extends SubsystemBase {
 
     public void arcadeDrive(double forwardSpeed, double rotation) {
         drive.arcadeDrive(forwardSpeed, rotation);
+    }
+
+    @Override
+    public void periodic() {
+        double requestedMaxOutput = maxOutput.get();
+
+        drive.setMaxOutput(Double.isFinite(requestedMaxOutput)
+                ? MathUtil.clamp(requestedMaxOutput, 0.0, 1.0)
+                : 0.0);
     }
 }
